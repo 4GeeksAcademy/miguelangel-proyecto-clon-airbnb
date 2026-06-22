@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ListingCardComponent } from "@/components/ListingCard";
 import { MapPlaceholderComponent } from "@/components/MapPlaceholder";
+import { NavbarComponent } from "@/components/Navbar";
 import { ResultsHeaderComponent, type PriceOrder } from "@/components/ResultsHeader";
 import type { Listing } from "@/types/listing";
 
@@ -21,6 +22,7 @@ const CatalogPage = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<PriceOrder>("asc");
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,30 +32,48 @@ const CatalogPage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const sortedListings = useMemo(() => {
-    return [...listings].sort((a, b) => (order === "asc" ? a.pricePerNight - b.pricePerNight : b.pricePerNight - a.pricePerNight));
-  }, [listings, order]);
+  const visibleListings = useMemo(() => {
+    const normalizedSearch = searchText.toLowerCase().trim();
+
+    return listings
+      .filter((listing) => {
+        if (!normalizedSearch) return true;
+
+        const matchesTitle = listing.title.toLowerCase().includes(normalizedSearch);
+        const matchesCategory = listing.category.toLowerCase().includes(normalizedSearch);
+        return matchesTitle || matchesCategory;
+      })
+      .sort((a, b) => (order === "asc" ? a.pricePerNight - b.pricePerNight : b.pricePerNight - a.pricePerNight));
+  }, [listings, order, searchText]);
 
   const toggleFavorite = (id: number) => {
     setListings((current) => current.map((item) => (item.id === id ? { ...item, isFavorite: !item.isFavorite } : item)));
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl px-4 py-6">
-      <ResultsHeaderComponent totalResults={sortedListings.length} onOrderChange={setOrder} />
-      {loading ? (
-        <p className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-700">Cargando alojamientos...</p>
-      ) : (
-        <section className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {sortedListings.map((listing) => (
-              <ListingCardComponent key={listing.id} listing={listing} onToggleFavorite={toggleFavorite} />
-            ))}
-          </div>
-          <MapPlaceholderComponent />
-        </section>
-      )}
-    </main>
+    <>
+      <NavbarComponent onSearchChange={setSearchText} />
+      <main className="mx-auto min-h-screen max-w-7xl px-4 py-6">
+        <ResultsHeaderComponent totalResults={visibleListings.length} onOrderChange={setOrder} />
+        {loading ? (
+          <p className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-700">Cargando alojamientos...</p>
+        ) : (
+          <section className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {visibleListings.map((listing) => (
+                <ListingCardComponent key={listing.id} listing={listing} onToggleFavorite={toggleFavorite} />
+              ))}
+              {visibleListings.length === 0 && (
+                <p className="sm:col-span-2 rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-700">
+                  No hay alojamientos que coincidan con tu búsqueda.
+                </p>
+              )}
+            </div>
+            <MapPlaceholderComponent />
+          </section>
+        )}
+      </main>
+    </>
   );
 };
 

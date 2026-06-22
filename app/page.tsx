@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CategoryFiltersComponent } from "@/components/CategoryFilters";
 import { ListingGridComponent } from "@/components/ListingGrid";
@@ -48,6 +49,15 @@ const HomePage = () => {
       <NavbarComponent onSearchChange={setSearchText} />
       <CategoryFiltersComponent onCategoryChange={setActiveCategory} />
       <section className="mx-auto max-w-7xl px-4 py-6">
+        <div className="mb-5 flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4">
+          <p className="text-sm text-gray-700 md:text-base">Explora más alojamientos con mapa y orden por precio.</p>
+          <Link
+            href="/catalog"
+            className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
+          >
+            Ver catálogo completo
+          </Link>
+        </div>
         {loading ? (
           <p className="rounded-xl border border-gray-200 bg-white p-6 text-center text-gray-700">Cargando alojamientos...</p>
         ) : (

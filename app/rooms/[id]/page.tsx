@@ -77,7 +77,7 @@ const RoomDetailPage = () => {
           </article>
           <AmenitiesGridComponent amenities={room.amenities} />
         </div>
-        <BookingCardComponent pricePerNight={room.pricePerNight} />
+        <BookingCardComponent pricePerNight={room.pricePerNight} maxGuests={room.guests} />
       </section>
     </main>
   );
